@@ -1,7 +1,8 @@
-import { Context, Hono, HTTPException } from "hono";
+import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import { VaultService } from "../service/vault_service";
 import { ReferralService } from "../service/referral_service";
+import { HTTPException } from "hono/http-exception";
 
 // Types
 interface WhitelistRequest {
@@ -230,6 +231,7 @@ export class AppHandler {
     try {
       const body = await c.req.json<UseReferralRequest>();
       const result = await this.referralService.useReferralCode(
+        c, // Added missing argument
         body.userExternalId,
         body.referralCode
       );
