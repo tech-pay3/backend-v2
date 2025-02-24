@@ -160,13 +160,14 @@ export class AppHandler {
   private handleTelegramUser = async (c: Context) => {
     try {
       const body = await c.req.json<CreateTelegramUserRequest>();
-      const createdUser = await this.vaultService.createTelegramUser(body);
+      const createdUser = await this.vaultService.createTelegramUser(c, body);
 
       if (body.referralCode) {
         console.debug(
           `Using referral for user ${body.externalId} with code ${body.referralCode}`
         );
         await this.referralService.useReferralCode(
+          c,
           body.externalId,
           body.referralCode
         );
@@ -219,7 +220,7 @@ export class AppHandler {
 
   private handleGetUsers = async (c: Context) => {
     try {
-      const users = await this.vaultService.getAllUsers();
+      //      const users = await this.vaultService.getAllUsers();
       return c.json({ status: "success", data: users });
     } catch (err) {
       console.error("Error fetching users:", err);

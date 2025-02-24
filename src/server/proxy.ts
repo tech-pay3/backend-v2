@@ -54,11 +54,23 @@ export class ProxyServer {
     const proxy = createProxyMiddleware({
       target: this.backendUrl,
       changeOrigin: true,
-      onProxyRes: async (proxyRes, req, res) => {
-        if (proxyRes.statusCode >= 200 && proxyRes.statusCode < 300) {
+      onProxyRes: async (
+        proxyRes: { statusCode: number },
+        req: { url: string },
+        res: any
+      ) => {
+        if (
+          proxyRes.statusCode &&
+          proxyRes.statusCode >= 200 &&
+          proxyRes.statusCode < 300
+        ) {
           if (isUserRegistrationPath(req.url!)) {
             try {
-              await handleUserRegResponse(proxyRes, req, this.vaultService);
+              const response = await handleUserRegResponse(
+                proxyRes as any,
+                req as any,
+                this.vaultService
+              );
               console.info(
                 `Register user: ${req.url} - ${proxyRes.statusCode}`
               );
@@ -72,8 +84,7 @@ export class ProxyServer {
 
     // Apply proxy middleware to specific paths
     this.app.use("/reg/*", async (c, next) => {
-      const response = await proxy(c.req.raw);
-      return response;
+      await proxy(c.req, c.res, next);
     });
   }
 
@@ -84,23 +95,32 @@ export class ProxyServer {
     });
 
     // User registration routes
-    this.app.post("/reg/user", this.handler.handleUserReg);
-    this.app.post("/reg/telegram-user", this.handler.handleCreateTelegramUser);
+    this.app.post("/reg/user", (c) => this.handler["handleUserReg"](c));
+    this.app.post("/reg/telegram-user", (c) =>
+      this.handler["handleTelegramUser"](c)
+    ); // Fixed method name
 
     // Referral routes
-    this.app.get("/referral/:telegramId", this.handler.handleReferral);
-    this.app.get("/quests/:telegramId", this.handler.handleGetQuests);
+    this.app.get("/referral/:telegramId", (c) =>
+      this.handler["handleReferral"](c)
+    );
+    this.app.get("/quests/:telegramId", (c) =>
+      this.handler["handleGetQuests"](c)
+    );
 
     // Preorder routes
-    this.app.post("/preorder", this.handler.handlePreorder);
-    this.app.get("/preorder/:telegramId", this.handler.handleGetPreorders);
+    this.app.post("/preorder", (c) => this.handler["handlePreorder"](c));
+    this.app.get("/preorder/:telegramId", (c) =>
+      this.handler["handleGetPreorders"](c)
+    );
 
     // Whitelist and quest routes
-    this.app.post("/whitelist", this.handler.handleWhitelist);
-    this.app.post("/quest/complete", this.handler.handleQuestComplete);
-    this.app.post(
-      "/quest-invite/complete",
-      this.handler.handleInviteQuestComplete
+    this.app.post("/whitelist", (c) => this.handler["handleWhitelist"](c));
+    this.app.post("/quest/complete", (c) =>
+      this.handler["handleQuestComplete"](c)
+    );
+    this.app.post("/quest-invite/complete", (c) =>
+      this.handler["handleInviteQuestComplete"](c)
     );
   }
 
