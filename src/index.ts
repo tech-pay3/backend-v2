@@ -3,6 +3,9 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
 
+// Import your CRUD router
+import crudApp from "./server/crud_handler";
+
 const app = new Hono({
   strict: false,
 }).basePath("/api");
@@ -13,7 +16,7 @@ app.use(
   cors({
     origin: "*",
     allowHeaders: ["*"],
-    allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE", "PUT"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     exposeHeaders: ["*"],
     maxAge: 600,
     credentials: true,
@@ -24,6 +27,9 @@ app.use(
 app.get("/health", (c) => {
   return c.text("healthy");
 });
+
+// Mount your CRUD endpoints (all routes defined in crud_handler.ts)
+app.route("/", crudApp);
 
 // Server configuration
 const port = parseInt(process.env.PORT || "3000");
