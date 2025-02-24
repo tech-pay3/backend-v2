@@ -4,13 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Retrieve Supabase credentials from your environment
-const SUPABASE_URL = process.env.SUPABASE_URL || "";
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Create a Hono application with a base path "/api"
-const crudApp = new Hono({ strict: false }).basePath("/api");
+// Create a Hono app WITHOUT a basePath (it will be mounted later)
+const crudApp = new Hono({ strict: false });
 
 /*
   ============================================================
@@ -30,7 +29,8 @@ crudApp.get("/users/:id", async (c: Context) => {
   const id = c.req.param("id");
   const { data, error } = await supabase.from("users").select("*").eq("id", id);
   if (error) throw new HTTPException(500, { message: error.message });
-  return c.json(data[0] || {});
+  const user = data && data.length > 0 ? data[0] : {};
+  return c.json(user);
 });
 
 // Create a new user
