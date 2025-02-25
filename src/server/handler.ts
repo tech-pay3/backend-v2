@@ -1,6 +1,6 @@
 import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
-import { VaultService } from "../service/register_service";
+import { RegisterService } from "../service/register_service";
 import { ReferralService } from "../service/referral_service";
 import { HTTPException } from "hono/http-exception";
 
@@ -39,10 +39,10 @@ interface UseReferralRequest {
 
 export class AppHandler {
   private app: Hono;
-  private vaultService: VaultService;
+  private vaultService: RegisterService;
   private referralService: ReferralService;
 
-  constructor(vaultService: VaultService, referralService: ReferralService) {
+  constructor(vaultService: RegisterService, referralService: ReferralService) {
     this.app = new Hono();
     this.vaultService = vaultService;
     this.referralService = referralService;
