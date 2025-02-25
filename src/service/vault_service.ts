@@ -1,6 +1,7 @@
 import { Context } from "hono";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "../db/types/supabase";
+import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Types
 interface CreateUserRequest {
@@ -13,6 +14,10 @@ interface CreateUserResponse {
 
 interface CreateTelegramUserRequest {
   externalId: string;
+  telegramUsername: string;
+  telegramProfilePic?: string;
+  referralCode?: string;
+  email: string;
 }
 
 interface PreorderCardRequest {
@@ -28,7 +33,48 @@ interface Preorder {
 }
 
 export class VaultService {
-  constructor(private supabase: SupabaseClient<Database>) {}
+  private supabase;
+
+  constructor() {
+    const supabaseUrl = process.env.SUPABASE_URL || "";
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
+    this.supabase = createClient(supabaseUrl, supabaseKey);
+  }
+
+  async handleUserReg(
+    ctx: Context,
+    req: CreateUserRequest,
+    metadata: { userId: string }
+  ): Promise<void> {
+    const { error } = await this.supabase.from("users").insert({
+      email: req.email,
+      external_id: metadata.userId,
+    });
+
+    if (error) throw error;
+    console.debug(`Inserted user ${metadata.userId}`);
+  }
+
+  async createTelegramUser(
+    ctx: Context,
+    req: CreateTelegramUserRequest
+  ): Promise<any> {
+    const { data, error } = await this.supabase
+      .from("users")
+      .insert({
+        external_id: req.externalId,
+        telegram_id: req.externalId,
+        email: req.email || "",
+        telegram_username: req.telegramUsername,
+        telegram_profile_pic: req.telegramProfilePic,
+        referral_code: req.referralCode || "",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 
   async whitelistUser(
     ctx: Context,
@@ -71,32 +117,6 @@ export class VaultService {
     if (pointsError) throw pointsError;
   }
 
-  async handleUserReg(
-    ctx: Context,
-    req: CreateUserRequest,
-    resp: CreateUserResponse
-  ): Promise<void> {
-    const { error } = await this.supabase.from("users").insert({
-      email: req.email,
-      external_id: resp.userId,
-    });
-
-    if (error) throw error;
-    console.debug(`Inserted user ${resp.userId}`);
-  }
-
-  async createTelegramUser(
-    ctx: Context,
-    req: CreateTelegramUserRequest
-  ): Promise<void> {
-    const { error } = await this.supabase.from("users").insert({
-      external_id: req.externalId,
-      telegram_id: req.externalId,
-    });
-
-    if (error) throw error;
-  }
-
   async preorderCard(ctx: Context, req: PreorderCardRequest): Promise<void> {
     const { error } = await this.supabase.from("preorders").insert({
       external_id: req.externalId,
@@ -106,16 +126,19 @@ export class VaultService {
     if (error) throw error;
   }
 
-  async getUserPreorders(
-    ctx: Context,
-    externalId: string
-  ): Promise<Preorder[]> {
+  async getUserPreorders(ctx: Context, telegramId: string): Promise<any[]> {
     const { data, error } = await this.supabase
       .from("preorders")
       .select("*")
-      .eq("external_id", externalId);
+      .eq("external_id", telegramId);
 
     if (error) throw error;
-    return data as Preorder[];
+    return data as any[];
+  }
+
+  async getAllUsers(): Promise<any[]> {
+    const { data, error } = await this.supabase.from("users").select("*");
+    if (error) throw error;
+    return data || [];
   }
 }

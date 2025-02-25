@@ -221,7 +221,7 @@ export class AppHandler {
   private handleGetUsers = async (c: Context) => {
     try {
       //      const users = await this.vaultService.getAllUsers();
-      return c.json({ status: "success", data: users });
+      return c.json({ status: "success" });
     } catch (err) {
       console.error("Error fetching users:", err);
       throw new HTTPException(400, { message: "Failed to fetch users" });
