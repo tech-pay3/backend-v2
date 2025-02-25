@@ -8,7 +8,7 @@ dotenv.config();
 // Import your CRUD router and other services
 import crudApp from "./server/crud_handler";
 import { AppHandler } from "./server/handler";
-import { VaultService } from "./service/vault_service";
+import { RegisterService } from "./service/register_service";
 import { ReferralService } from "./service/referral_service";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./db/types/supabase";
@@ -19,11 +19,11 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
 const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 // Create instances of your service classes`
-const vaultService = new VaultService();
+const registerService = new RegisterService();
 const referralService = new ReferralService(supabase);
 
 // Create an instance of the application handler
-const appHandler = new AppHandler(vaultService, referralService);
+const appHandler = new AppHandler(registerService, referralService);
 
 // Create the main Hono app with basePath "/api"
 const app = new Hono({ strict: false }).basePath("/api");

@@ -1,6 +1,6 @@
 import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
-import { VaultService } from "../service/vault_service";
+import { VaultService } from "../service/register_service";
 import { ReferralService } from "../service/referral_service";
 import { HTTPException } from "hono/http-exception";
 

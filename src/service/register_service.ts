@@ -32,7 +32,7 @@ interface Preorder {
   created_at: string;
 }
 
-export class VaultService {
+export class RegisterService {
   private supabase;
 
   constructor() {
