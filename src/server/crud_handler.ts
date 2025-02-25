@@ -36,7 +36,12 @@ crudApp.get("/users/:id", async (c: Context) => {
 // Create a new user
 crudApp.post("/users", async (c: Context) => {
   const body = await c.req.json();
+  // Set default values for email and referral_code if they are missing
+  body.email = body.email || "";
+  body.referral_code = body.referral_code || "";
+  console.log(body);
   const { data, error } = await supabase.from("users").insert(body);
+  console.log(error);
   if (error) throw new HTTPException(500, { message: error.message });
   return c.json(data);
 });
