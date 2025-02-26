@@ -16,7 +16,8 @@
     "@supabase/supabase-js": "^2.48.1",
     "dotenv": "^16.4.7",
     "hono": "^4.7.2",
-    "http-proxy-middleware": "^3.0.3"
+    "http-proxy-middleware": "^3.0.3",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/http-proxy-middleware": "^0.19.3",

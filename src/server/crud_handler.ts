@@ -1,6 +1,7 @@
 import { Hono, Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { createClient } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -44,6 +45,7 @@ crudApp.post("/users", async (c: Context) => {
     body.referral_code = body.external_id;
   }
   body.referral_code = body.referral_code || "";
+  body.email = !body.email ? uuidv4() + "@example.com" : body.email;
   console.log(body);
   const { data, error } = await supabase.from("users").insert(body);
   console.log(error);
